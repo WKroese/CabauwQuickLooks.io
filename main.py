@@ -104,7 +104,7 @@ def make_plots(data_dir,fig_dir):
 
     plt.figure(figsize=(7,4))
     plt.plot(t,RH[:,-1])
-    plt.title('relative humidity at 2 m \n'+'$RH_{min}$'+'={:.1f}, '.format(np.min(RH))+'$RH_{max}$'+'={:.1f}'.format(np.max(RH)))
+    plt.title('relative humidity at 2 m \n'+'$RH_{min}$'+'={:.1f}, '.format(np.min(RH[:,-1]))+'$RH_{max}$'+'={:.1f}'.format(np.max(RH[:,-1])))
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('RH [%]')
@@ -114,7 +114,7 @@ def make_plots(data_dir,fig_dir):
     plt.figure(figsize=(7,4))
     plt.plot(t,T[:,-1],label='T')
     plt.plot(t,TD[:,-1],label='dewpoint')
-    plt.title('temperature and dewpoint at 2m \n'+'$T_{min}$'+'={:.1f}, '.format(np.min(T))+'$T_{max}$'+'={:.1f}'.format(np.max(T)))
+    plt.title('temperature and dewpoint at 2m \n'+'$T_{min}$'+'={:.1f}, '.format(np.min(T[:,-1]))+'$T_{max}$'+'={:.1f}'.format(np.max(T[:,-1])))
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('T [$^\circ$C]')
@@ -164,6 +164,44 @@ def make_plots(data_dir,fig_dir):
     plt.legend()
     plt.savefig(fig_dir+'visibility.png')
     
+    ds = nc.MFDataset([data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+yesterday+'.nc',data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+today+'.nc'])
+
+    date = ds['date'][:]
+    t_hour = ds['time'][:]
+    t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
+    now = pd.Timestamp.now()
+    mask = (t<now) & (t>now-timedelta(hours=36))
+
+    P = ds['P0'][mask]
+    SWD = ds['SWD'][mask]
+    rain = ds['RAIN'][mask]
+    
+    t = t[mask]
+
+    plt.figure(figsize=(7,4))
+    plt.plot(t,P)
+    plt.title('surface pressure')
+    plt.xlabel('time UTC [hours]')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
+    plt.ylabel('pressure [hPa]')
+    # plt.ylim(900,1100)
+    plt.savefig(fig_dir+'pressure.png')
+
+    plt.figure(figsize=(7,4))
+    plt.plot(t,SWD)
+    plt.title('downward solar radiation')
+    plt.xlabel('time UTC [hours]')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
+    plt.ylabel('flux [W m$^{-2}$]')
+    plt.savefig(fig_dir+'swd.png')
+
+    plt.figure(figsize=(7,4))
+    plt.plot(t,rain)
+    plt.title('precipitation\n total over last 24h: {} mm'.format(np.sum(rain[::-1][0:240])))
+    plt.xlabel('time UTC [hours]')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
+    plt.ylabel('[mm]')
+    plt.savefig(fig_dir+'rain.png')
 
 if __name__ == '__main__':
     fig_dir = './figures/'
@@ -173,4 +211,10 @@ if __name__ == '__main__':
     dataset_version = 'v1.2'
 
     download_recent(dataset_name, dataset_version, data_dir)
+    
+    dataset_name = 'cesar_surface_meteo_la1_t10'
+    dataset_version = 'v1.0'
+
+    download_recent(dataset_name, dataset_version, data_dir)
+
     make_plots(data_dir,fig_dir)

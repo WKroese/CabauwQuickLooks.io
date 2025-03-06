@@ -50,12 +50,18 @@
     <div class="images-grid">
       <img src="figures/rh.png" alt="Image 1">
       <img src="figures/temp.png" alt="Image 2">
+      <img src="figures/pressure.png" alt="Image 2.5">
+      <img src="figures/rain.png" alt="Image 2.75">
       <img src="figures/wind.png" alt="Image 3">
       <img src="figures/wind_dir.png" alt="Image 4">
       <img src="figures/windrose.png" alt="Image 5" id="narrow-image">
       <img src="figures/visibility.png" alt="Image 6">
+      <img src="figures/swd.png" alt="Image 7">
     </div>
   </div>
+
+  <p><small>Willem Kroese <a href="mailto:w.s.j.kroese@uu.nl">w.s.j.kroese@<span style="display:none;">ignoreme-</span>uu.nl</small> </p>
+    
     <!-- JavaScript to append a timestamp to each image URL -->
     <script>
         function updateImages() {
@@ -69,5 +75,15 @@
         }
         window.onload = updateImages;
       </script>
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          // Select all links whose href contains "ignoreme-"
+          var emailLinks = document.querySelectorAll('a[href*="ignoreme-"]');
+          emailLinks.forEach(function(link) {
+            // Replace "ignoreme-" with an empty string in the href
+            link.href = link.href.replace("ignoreme-", "");
+          });
+        });
+        </script>
 </body>
 </html>
