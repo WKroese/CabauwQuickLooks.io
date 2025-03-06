@@ -59,7 +59,7 @@ def download_file_from_temporary_download_url(download_url, filename):
 
     logger.info(f"Successfully downloaded dataset file to {filename}")
 
-def download_recent(dataset_name, dataset_version,data_dir):
+def download_recent(dataset_name, dataset_version,data_dir,instrument=None):
     api_key = config.key 
     logger.info(f"Fetching files of {dataset_name} version {dataset_version}")
     api = OpenDataAPI(api_token=api_key)
@@ -76,13 +76,19 @@ def download_recent(dataset_name, dataset_version,data_dir):
 
     for i in response["files"]: 
         print(i.get("filename"))
-
         current_file = i.get("filename")
-        response = api.get_file_url(dataset_name, dataset_version, current_file)
-        
-        write_file = data_dir + current_file
 
-        download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
+        if instrument == 'ceilometer':
+            #select only files from cabauw
+            if '_06348_' in current_file:
+                response = api.get_file_url(dataset_name, dataset_version, current_file)
+                write_file = data_dir + current_file
+                download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
+        else:
+            response = api.get_file_url(dataset_name, dataset_version, current_file)
+            write_file = data_dir + current_file
+            download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
+        
 
 
 def make_plots(data_dir,fig_dir):
@@ -201,10 +207,12 @@ def make_plots(data_dir,fig_dir):
 
     plt.figure(figsize=(7,4))
     plt.plot(t,rain)
-    plt.title('precipitation\n total over last 24h: {} mm'.format(np.sum(rain[::-1][0:240])))
+    plt.title('precipitation\n total over last 24h: {:.3f} mm'.format(np.sum(rain[::-1][0:240])))
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('[mm]')
+    if np.max(rain)<0.1:
+        plt.ylim(0,0.1)
     plt.savefig(fig_dir+'rain.png')
 
 if __name__ == '__main__':
