@@ -63,7 +63,7 @@ def download_recent(dataset_name, dataset_version,data_dir):
     begin = (datetime.today()-timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
     end = datetime.today().strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
-    params = {"maxKeys": 366, "orderBy": "created", "sorting": "desc", "begin": begin, "end": end}
+    params = {"maxKeys": 2, "orderBy": "created", "sorting": "desc", "begin": begin, "end": end}
     
     response = api.list_files(dataset_name, dataset_version, params)
     if "error" in response:
@@ -76,7 +76,7 @@ def download_recent(dataset_name, dataset_version,data_dir):
         current_file = i.get("filename")
         response = api.get_file_url(dataset_name, dataset_version, current_file)
         
-        write_file = data_dir+current_file
+        write_file = data_dir + current_file
 
         download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
 
@@ -157,7 +157,6 @@ def make_plots(data_dir,fig_dir):
     plt.plot(t,vis[:,-1]*1e-3,label='2m')
     plt.plot(t,vis[:,2]*1e-3,label='80m')
     plt.plot(t,vis[:,0]*1e-3,label='200m')
-    
     plt.title('visibility')
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
