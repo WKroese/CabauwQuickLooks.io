@@ -2,6 +2,10 @@
 #author: Willem Kroese
 #date: 04-03-2025
 
+# 	urn:xkdc:ds:nl.knmi::cesar_surface_meteo_la1_t10/v1.0/, https://dataplatform.knmi.nl/dataset/cesar-surface-meteo-la1-t10-v1-0
+#   urn:xkdc:ds:nl.knmi::cesar_tower_meteo_la1_t10/v1.2/, https://dataplatform.knmi.nl/dataset/cesar-tower-meteo-la1-t10-v1-2
+#
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
