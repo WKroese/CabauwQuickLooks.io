@@ -3,9 +3,5 @@ config.py
 .DS_Store
 __pycache__/
 *.sh
-<<<<<<< HEAD
-*.zip
-=======
 *.zip
 figures/archive
->>>>>>> backup-main
