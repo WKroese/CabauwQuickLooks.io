@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cabauw live data - archive</title>
+  <style>
+    /* Center the overall content */
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    /* Limit content width and center it */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+    }
+    /* Grid layout for the images */
+    .images-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    /* Make images responsive */
+    .images-grid img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    /* Special style for image 5 */
+    #narrow-image {
+      width: 80%;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Top text section -->
+    <iframe src="https://drive.google.com/embeddedfolderview?id=1g_dOUG55yJGQA0GcEK_uh0fVX-1KFJCz#list" style="width:100%; height:600px; border:0;"></iframe>
+
+  <p><small>Willem Kroese <a href="mailto:w.s.j.kroese@uu.nl">w.s.j.kroese@<span style="display:none;">ignoreme-</span>uu.nl</small> </p>
+    
+    <!-- JavaScript to append a timestamp to each image URL -->
+    <script>
+        function updateImages() {
+          const timestamp = new Date().getTime();
+          const images = document.querySelectorAll('.images-grid img');
+          images.forEach(function(img) {
+            // Remove any existing query string then append the timestamp
+            let baseUrl = img.getAttribute('src').split('?')[0];
+            img.setAttribute('src', baseUrl + "?t=" + timestamp);
+          });
+        }
+        window.onload = updateImages;
+      </script>
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          // Select all links whose href contains "ignoreme-"
+          var emailLinks = document.querySelectorAll('a[href*="ignoreme-"]');
+          emailLinks.forEach(function(link) {
+            // Replace "ignoreme-" with an empty string in the href
+            link.href = link.href.replace("ignoreme-", "");
+          });
+        });
+        </script>
+</body>
+</html>

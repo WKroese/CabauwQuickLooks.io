@@ -6,6 +6,14 @@
 #   urn:xkdc:ds:nl.knmi::cesar_tower_meteo_la1_t10/v1.2/, https://dataplatform.knmi.nl/dataset/cesar-tower-meteo-la1-t10-v1-2
 #
 
+#TODO: https://cloudnet.fmi.fi/site/lutjewad
+#https://cloudnet.fmi.fi/site/cabauw
+
+#TODO: add cloudnet (also Lutjewad?), add pandora
+#TODO: add automation, 
+#TODO: add daily ims generation
+#TODO: add drive sync, add folders/drive ims to site
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -18,7 +26,6 @@ from datetime import datetime
 from datetime import timedelta
 import matplotlib.dates as mdates
 from windrose import WindroseAxes
-from dateutil import tz
 
 import config #contains api key
 
@@ -89,19 +96,43 @@ def download_recent(dataset_name, dataset_version,data_dir,instrument=None):
             write_file = data_dir + current_file
             download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
         
+def make_day_plots_archive(today):
+    data_dir = './data/'
+    fig_dir = './figures/archive/'
+    os.makedirs(fig_dir,exist_ok=True)
+    os.makedirs(fig_dir+today,exist_ok=True)
+    make_plots(data_dir,fig_dir+today+'/',today)   
+    
 
+def check_new_day():
+    '''check if new day has started, if so make plots of previous day and save to date folder'''
+    today = datetime.today().date().strftime("%Y%m%d")
+    with open('last_date.txt','r') as f:
+        last_date = f.read()
+    if today != last_date:
+        make_day_plots_archive(today)
+        with open('last_date.txt','w') as f:
+            f.write(today)
 
-def make_plots(data_dir,fig_dir):
+def make_plots(data_dir,fig_dir,day=None):
     today = datetime.today().date().strftime("%Y%m%d")
     yesterday= (datetime.today()-timedelta(days=1)).date().strftime("%Y%m%d")
 
-    ds = nc.MFDataset([data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+yesterday+'.nc',data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+today+'.nc'])
-
-    date = ds['date'][:]
-    t_hour = ds['time'][:]
-    t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
     now = pd.Timestamp.now()
-    mask = (t<now) & (t>now-timedelta(hours=36))
+
+    if day is not None:
+        ds = nc.MFDataset([data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+day+'.nc'])
+        date = ds['date'][:]
+        t_hour = ds['time'][:]
+        t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
+        mask = t<now #hacky fix for now
+    else:
+        print('HERE')
+        ds = nc.MFDataset([data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+yesterday+'.nc',data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+today+'.nc'])
+        date = ds['date'][:]
+        t_hour = ds['time'][:]
+        t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
+        mask = (t<now) & (t>now-timedelta(hours=36))
 
     T = ds['TA'][mask,:]-273.15
     TD = ds['TD'][mask,:]-273.15
@@ -119,6 +150,7 @@ def make_plots(data_dir,fig_dir):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('RH [%]')
     plt.ylim(25,105)
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'rh.png')
 
     plt.figure(figsize=(7,4))
@@ -129,6 +161,7 @@ def make_plots(data_dir,fig_dir):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('T [$^\circ$C]')
     plt.legend()
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'temp.png')
 
     plt.figure(figsize=(7,4))
@@ -140,6 +173,7 @@ def make_plots(data_dir,fig_dir):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('uv [m/s]')
     plt.legend()
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'wind.png')
 
     plt.figure(figsize=(7,4))
@@ -152,6 +186,7 @@ def make_plots(data_dir,fig_dir):
     plt.ylabel('degrees')
     plt.ylim(-5,365)
     plt.legend()
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'wind_dir.png')
 
     ax = WindroseAxes.from_ax(figsize=(6,6))
@@ -161,26 +196,37 @@ def make_plots(data_dir,fig_dir):
     ax.set_ylim(0,ax.get_rmax()*1.1)
     for i in ax.get_xticklabels():
         plt.setp(i, fontsize=14)
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'windrose.png')
 
     plt.figure(figsize=(7,4))
     plt.plot(t,vis[:,-1]*1e-3,label='2m')
     plt.plot(t,vis[:,2]*1e-3,label='80m')
     plt.plot(t,vis[:,0]*1e-3,label='200m')
+    plt.hlines(1,t[0],t[-1],linestyles='dashed',color='black',alpha=0.5)
+    plt.text(t[-1]-pd.to_timedelta(4,'h'),1.5,'fog limit',color='black',alpha=0.7)
     plt.title('visibility')
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
-    plt.ylabel('vis [km]')
+    plt.ylabel('[km]')
     plt.legend()
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'visibility.png')
-    
-    ds = nc.MFDataset([data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+yesterday+'.nc',data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+today+'.nc'])
 
-    date = ds['date'][:]
-    t_hour = ds['time'][:]
-    t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
-    now = pd.Timestamp.now()
-    mask = (t<now) & (t>now-timedelta(hours=36))
+
+    if day is not None:
+        ds = nc.MFDataset([data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+day+'.nc'])
+        date = ds['date'][:]
+        t_hour = ds['time'][:]
+        t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
+        mask = t<now #hacky fix for now
+    else:
+        print('HERE')
+        ds = nc.MFDataset([data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+yesterday+'.nc',data_dir+'cesar_surface_meteo_la1_t10_v1.0_'+today+'.nc'])
+        date = ds['date'][:]
+        t_hour = ds['time'][:]
+        t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
+        mask = (t<now) & (t>now-timedelta(hours=36))
 
     P = ds['P0'][mask]
     SWD = ds['SWD'][mask]
@@ -195,6 +241,7 @@ def make_plots(data_dir,fig_dir):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('pressure [hPa]')
     # plt.ylim(900,1100)
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'pressure.png')
 
     plt.figure(figsize=(7,4))
@@ -203,16 +250,18 @@ def make_plots(data_dir,fig_dir):
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('flux [W m$^{-2}$]')
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'swd.png')
 
     plt.figure(figsize=(7,4))
     plt.plot(t,rain)
-    plt.title('precipitation\n total over last 24h: {:.3f} mm'.format(np.sum(rain[::-1][0:240])))
+    plt.title('precipitation\n total over last 24h: {:.1f} mm'.format(np.sum(rain[::-1][0:240])))
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('[mm]')
     if np.max(rain)<0.1:
         plt.ylim(0,0.1)
+    plt.xlim(now-timedelta(hours=36),now)
     plt.savefig(fig_dir+'rain.png')
 
 if __name__ == '__main__':
@@ -228,5 +277,7 @@ if __name__ == '__main__':
     dataset_version = 'v1.0'
 
     download_recent(dataset_name, dataset_version, data_dir)
+
+    check_new_day()
 
     make_plots(data_dir,fig_dir)
