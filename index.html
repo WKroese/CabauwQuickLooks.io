@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cabauw meteo</title>
+  <title>Cabauw live data</title>
   <style>
     /* Center the overall content */
     body {
@@ -45,45 +45,49 @@
     <!-- Top text section -->
     <h1>Cabauw meteorological info</h1>
     <p>This website showcases meteorological data from today and yesterday, measured at the <a href='https://ruisdael-observatory.nl/cabauw/'>Cabauw measurment station</a> (51.971° N, 4.927° E). The figures update every hour. Data is acessible throught the <a href='https://dataplatform.knmi.nl/'>KNMI Data Platform</a>. </p>
-    
+  
+    <strong>For old images, see the <a href='archive.html'>archive</a>.</strong>
+
     <!-- Images grid: adjust image filenames as needed -->
     <div class="images-grid">
-      <img src="figures/rh.png" alt="Image 1">
-      <img src="figures/temp.png" alt="Image 2">
-      <img src="figures/pressure.png" alt="Image 2.5">
-      <img src="figures/rain.png" alt="Image 2.75">
-      <img src="figures/wind.png" alt="Image 3">
-      <img src="figures/wind_dir.png" alt="Image 4">
-      <img src="figures/windrose.png" alt="Image 5" id="narrow-image">
-      <img src="figures/visibility.png" alt="Image 6">
-      <img src="figures/swd.png" alt="Image 7">
+      <img src="figures/rh.png" alt="Relative Humidity TS">
+      <img src="figures/temp.png" alt="Temperature TS">
+      <img src="figures/pressure.png" alt="Pressure TS">
+      <img src="figures/rain.png" alt="Rain TS">
+      <img src="figures/wind.png" alt="wind strength TS">
+      <img src="figures/wind_dir.png" alt="Wind Direction TS">
+      <img src="figures/windrose.png" alt="Wind Rose" id="narrow-image">
+      <img src="figures/visibility.png" alt="Visibility TS">
+      <img src="figures/swd.png" alt="Solar radiation TS">
     </div>
   </div>
 
+
   <p><small>Willem Kroese <a href="mailto:w.s.j.kroese@uu.nl">w.s.j.kroese@<span style="display:none;">ignoreme-</span>uu.nl</small> </p>
     
-    <!-- JavaScript to append a timestamp to each image URL -->
-    <script>
-        function updateImages() {
-          const timestamp = new Date().getTime();
-          const images = document.querySelectorAll('.images-grid img');
-          images.forEach(function(img) {
-            // Remove any existing query string then append the timestamp
-            let baseUrl = img.getAttribute('src').split('?')[0];
-            img.setAttribute('src', baseUrl + "?t=" + timestamp);
-          });
-        }
-        window.onload = updateImages;
-      </script>
-      <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          // Select all links whose href contains "ignoreme-"
-          var emailLinks = document.querySelectorAll('a[href*="ignoreme-"]');
-          emailLinks.forEach(function(link) {
-            // Replace "ignoreme-" with an empty string in the href
-            link.href = link.href.replace("ignoreme-", "");
-          });
+  <!-- JavaScript to append a timestamp to each image URL -->
+  <script>
+      function updateImages() {
+        const timestamp = new Date().getTime();
+        const images = document.querySelectorAll('.images-grid img');
+        images.forEach(function(img) {
+          // Remove any existing query string then append the timestamp
+          let baseUrl = img.getAttribute('src').split('?')[0];
+          img.setAttribute('src', baseUrl + "?t=" + timestamp);
         });
-        </script>
+      }
+      window.onload = updateImages;
+  </script>
+  <!-- hide email-->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Select all links whose href contains "ignoreme-"
+      var emailLinks = document.querySelectorAll('a[href*="ignoreme-"]');
+      emailLinks.forEach(function(link) {
+        // Replace "ignoreme-" with an empty string in the href
+        link.href = link.href.replace("ignoreme-", "");
+      });
+    });
+  </script>
 </body>
 </html>
