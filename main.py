@@ -84,20 +84,6 @@ def download_recent(dataset_name, dataset_version,data_dir,instrument=None):
     for i in response["files"]: 
         print(i.get("filename"))
         current_file = i.get("filename")
-<<<<<<< HEAD
-
-        if instrument == 'ceilometer':
-            #select only files from cabauw
-            if '_06348_' in current_file:
-                response = api.get_file_url(dataset_name, dataset_version, current_file)
-                write_file = data_dir + current_file
-                download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
-        else:
-            response = api.get_file_url(dataset_name, dataset_version, current_file)
-            write_file = data_dir + current_file
-            download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
-        
-=======
 
         if instrument == 'ceilometer':
             #select only files from cabauw
@@ -127,7 +113,6 @@ def check_new_day():
         make_day_plots_archive(today)
         with open('last_date.txt','w') as f:
             f.write(today)
->>>>>>> backup-main
 
 def make_plots(data_dir,fig_dir,day=None):
     today = datetime.today().date().strftime("%Y%m%d")
@@ -270,20 +255,13 @@ def make_plots(data_dir,fig_dir,day=None):
 
     plt.figure(figsize=(7,4))
     plt.plot(t,rain)
-<<<<<<< HEAD
-    plt.title('precipitation\n total over last 24h: {:.3f} mm'.format(np.sum(rain[::-1][0:240])))
-=======
     plt.title('precipitation\n total over last 24h: {:.1f} mm'.format(np.sum(rain[::-1][0:240])))
->>>>>>> backup-main
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('[mm]')
     if np.max(rain)<0.1:
         plt.ylim(0,0.1)
-<<<<<<< HEAD
-=======
     plt.xlim(now-timedelta(hours=36),now)
->>>>>>> backup-main
     plt.savefig(fig_dir+'rain.png')
 
 if __name__ == '__main__':
