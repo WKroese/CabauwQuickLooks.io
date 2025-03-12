@@ -96,12 +96,12 @@ def download_recent(dataset_name, dataset_version,data_dir,instrument=None):
             write_file = data_dir + current_file
             download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
         
-def make_day_plots_archive(today):
+def make_day_plots_archive(day):
     data_dir = './data/'
     fig_dir = './figures/archive/'
     os.makedirs(fig_dir,exist_ok=True)
-    os.makedirs(fig_dir+today,exist_ok=True)
-    make_plots(data_dir,fig_dir+today+'/',today)   
+    os.makedirs(fig_dir+day,exist_ok=True)
+    make_plots(data_dir,fig_dir+day+'/',day)   
     
 
 def check_new_day():
@@ -110,7 +110,7 @@ def check_new_day():
     with open('last_date.txt','r') as f:
         last_date = f.read()
     if today != last_date:
-        make_day_plots_archive(today)
+        make_day_plots_archive(last_date)
         with open('last_date.txt','w') as f:
             f.write(today)
 
@@ -126,12 +126,14 @@ def make_plots(data_dir,fig_dir,day=None):
         t_hour = ds['time'][:]
         t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
         mask = t<now #hacky fix for now
+        xmin, xmax = t[0],t[-1]
     else:
         ds = nc.MFDataset([data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+yesterday+'.nc',data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+today+'.nc'])
         date = ds['date'][:]
         t_hour = ds['time'][:]
         t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
         mask = (t<now) & (t>now-timedelta(hours=36))
+        xmin, xmax = now-timedelta(hours=36),now
 
     T = ds['TA'][mask,:]-273.15
     TD = ds['TD'][mask,:]-273.15
@@ -149,7 +151,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('RH [%]')
     plt.ylim(25,105)
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'rh.png')
 
     plt.figure(figsize=(7,4))
@@ -160,7 +162,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('T [$^\circ$C]')
     plt.legend()
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'temp.png')
 
     plt.figure(figsize=(7,4))
@@ -172,7 +174,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('uv [m/s]')
     plt.legend()
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'wind.png')
 
     plt.figure(figsize=(7,4))
@@ -185,7 +187,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.ylabel('degrees')
     plt.ylim(-5,365)
     plt.legend()
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'wind_dir.png')
 
     ax = WindroseAxes.from_ax(figsize=(6,6))
@@ -195,7 +197,7 @@ def make_plots(data_dir,fig_dir,day=None):
     ax.set_ylim(0,ax.get_rmax()*1.1)
     for i in ax.get_xticklabels():
         plt.setp(i, fontsize=14)
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'windrose.png')
 
     plt.figure(figsize=(7,4))
@@ -209,7 +211,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('[km]')
     plt.legend()
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'visibility.png')
 
 
@@ -239,7 +241,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('pressure [hPa]')
     # plt.ylim(900,1100)
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'pressure.png')
 
     plt.figure(figsize=(7,4))
@@ -248,7 +250,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.xlabel('time UTC [hours]')
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H"))
     plt.ylabel('flux [W m$^{-2}$]')
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'swd.png')
 
     plt.figure(figsize=(7,4))
@@ -259,7 +261,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.ylabel('[mm]')
     if np.max(rain)<0.1:
         plt.ylim(0,0.1)
-    plt.xlim(now-timedelta(hours=36),now)
+    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'rain.png')
 
 if __name__ == '__main__':
