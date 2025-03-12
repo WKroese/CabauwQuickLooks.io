@@ -127,7 +127,6 @@ def make_plots(data_dir,fig_dir,day=None):
         t = pd.to_datetime(date,format='%Y%m%d')+pd.to_timedelta(t_hour,'h')
         mask = t<now #hacky fix for now
     else:
-        print('HERE')
         ds = nc.MFDataset([data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+yesterday+'.nc',data_dir+'cesar_tower_meteo_la1_t10_v1.2_'+today+'.nc'])
         date = ds['date'][:]
         t_hour = ds['time'][:]
