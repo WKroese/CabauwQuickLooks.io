@@ -197,7 +197,6 @@ def make_plots(data_dir,fig_dir,day=None):
     ax.set_ylim(0,ax.get_rmax()*1.1)
     for i in ax.get_xticklabels():
         plt.setp(i, fontsize=14)
-    plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'windrose.png')
 
     plt.figure(figsize=(7,4))
@@ -261,7 +260,7 @@ def make_plots(data_dir,fig_dir,day=None):
     plt.ylabel('[mm]')
     if np.max(rain)<0.1:
         plt.ylim(0,0.1)
-    plt.xlim(xmin,xmax)
+    # plt.xlim(xmin,xmax)
     plt.savefig(fig_dir+'rain.png')
 
 if __name__ == '__main__':
