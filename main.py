@@ -66,6 +66,34 @@ def download_file_from_temporary_download_url(download_url, filename):
 
     logger.info(f"Successfully downloaded dataset file to {filename}")
 
+def download_range(dataset_name, dataset_version,data_dir,date1,date2,instrument=None):
+    api_key = config.key 
+    logger.info(f"Fetching files of {dataset_name} version {dataset_version}")
+    api = OpenDataAPI(api_token=api_key)
+
+    params = {"maxKeys": 360, "orderBy": "created", "sorting": "desc", "begin": date1.strftime("%Y-%m-%dT%H:%M:%S+00:00"), "end": date2.strftime("%Y-%m-%dT%H:%M:%S+00:00")}
+    
+    response = api.list_files(dataset_name, dataset_version, params)
+    if "error" in response:
+        logger.error(f"Unable to retrieve list of files: {response['error']}")
+        sys.exit(1)
+
+    for i in response["files"]: 
+        print(i.get("filename"))
+        current_file = i.get("filename")
+
+        if instrument == 'ceilometer':
+            #select only files from cabauw
+            if '_06348_' in current_file:
+                response = api.get_file_url(dataset_name, dataset_version, current_file)
+                write_file = data_dir + current_file
+                download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
+        else:
+            response = api.get_file_url(dataset_name, dataset_version, current_file)
+            write_file = data_dir + current_file
+            download_file_from_temporary_download_url(response["temporaryDownloadUrl"], write_file)
+        
+
 def download_recent(dataset_name, dataset_version,data_dir,instrument=None):
     api_key = config.key 
     logger.info(f"Fetching files of {dataset_name} version {dataset_version}")
